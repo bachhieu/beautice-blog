@@ -1,0 +1,78 @@
+version: "3"
+services:
+  elasticsearch:
+    image: elasticsearch:8.6.2
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled= false
+    ports:
+      - 9200:9200
+    networks:
+      - beutice
+  kibana:
+    image: kibana:8.6.2
+    container_name: kibana
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - beutice
+  logstash:
+    image: logstash:8.6.2
+    restart: always
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - "5044:5044"
+      - "50000:50000/tcp"
+      - "50000:50000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD}
+    networks:
+      - beutice
+    depends_on:
+      - elasticsearch
+
+  mongodb:
+    image: mongo:6.0.5
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+    env_file:
+      - .env
+    ports:
+      - 27017:27017
+    networks:
+      - beutice
+  app:
+    build: .
+    restart: always
+    environment:
+      - DATABASE_URI=mongodb://hieubv:hieubv@mongodb:27017/beautice?authSource=admin
+      - ELASTICSEARCH_URI=http://elasticsearch:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongodb
+      - elasticsearch
+    networks:
+      - beutice
+
+networks:
+  beutice:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
