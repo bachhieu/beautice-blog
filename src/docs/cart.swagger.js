@@ -88,23 +88,4 @@
  *      description: example for a payment successfull
  *     400:
  *      description: Bad request !!!!!!!!!!
- * /cart/order/shipping-detail:
- *   get:
- *    tags:
- *     - Cart
- *    summary: example for a order
- *    security:
- *     - bearerAuth: []
- *    parameters:
- *    - name: order_code
- *      in: query
- *      type: string
- *      description: get shipping detail
- *      example: LL6XC7
- *      repuired: true
- *    responses:
- *     200:
- *      description: example for a order
- *     400:
- *      description: Bad request !!!!!!!!!!
  */
