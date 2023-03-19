@@ -114,9 +114,9 @@ class Elasticsearch {
       index_name.map(async (name) => {
         const index = await this.client.indices.exists({ index: name });
         const model = models[name];
-        if (index) {
-          // @ts-ignore
-          const datas = await model.find().lean();
+        // @ts-ignore
+        const datas = await model.find().lean();
+        if (index && datas.length) {
           const body = [];
           datas.forEach((data) => {
             body.push({

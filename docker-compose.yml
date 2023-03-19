@@ -11,6 +11,17 @@ services:
       - xpack.security.enabled= false
     ports:
       - 9200:9200
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - beutice
   # kibana:
@@ -65,8 +76,19 @@ services:
     ports:
       - 3000:3000
     depends_on:
-      - mongodb
       - elasticsearch
+      - mongodb
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://elasticsearch:9200/_cluster/health?wait_for_status=yellow&timeout=5s",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     networks:
       - beutice
 
