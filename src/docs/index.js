@@ -9,6 +9,9 @@ const options = {
     },
     servers: [
       {
+        url: "http://52.221.205.222:3000",
+      },
+      {
         url: "http://127.0.0.1:3000",
       },
       {
