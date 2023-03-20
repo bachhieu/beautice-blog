@@ -1,4 +1,4 @@
-const { productModel } = require("./../db");
+const { productModel, blogModel } = require("./../db");
 const ElasticService = require("./elasticsearch.service");
 class Product {
   async create(payload) {
@@ -104,14 +104,13 @@ class Product {
     }
   }
 
-  // async sold(products) {
-  //   return await Promise.all(
-  //     products.map(async (product) => {
-  //       const prod = await productModel.findOneAndUpdate({ _id: product.product });
-  //       // @ts-ignore
-  //       return prod?.instock > product.quantity ? true : product;
-  //     })
-  //   );
-  // }
+  async syncEs() {
+    await ElasticService.initIndex();
+    // await ElasticService.initData({
+    //   blog: blogModel,
+    //   product: productModel,
+    // });
+    return;
+  }
 }
 module.exports = new Product();

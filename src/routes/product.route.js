@@ -6,6 +6,7 @@ const { validateBody, validateQuery, productValidate, validateParams } = require
 router.get("/page/:page", validateParams(productValidate.page), ProductController.getAll);
 router.get("/tags/:tag", validateParams(productValidate.tags), ProductController.getProductsByTag);
 router.get("/search", validateQuery(productValidate.search), ProductController.searchProduct);
+router.get("/sync_data", ProductController.syncEs);
 router.get("/top-likes", validateQuery(productValidate.topLikes), ProductController.sort);
 router.get("/top-views", validateQuery(productValidate.topViews), ProductController.sort);
 router.get("/top-sold", validateQuery(productValidate.topViews), ProductController.sort);

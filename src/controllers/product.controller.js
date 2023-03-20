@@ -111,6 +111,19 @@ class Product {
       res.status(400).json({ error: "Bad request!" });
     }
   }
+
+  async syncEs(req, res) {
+    try {
+      const result = await ProductService.syncEs();
+      res.status(200).json("successfull!!!");
+    } catch (e) {
+      console.log(
+        "🚀 ~ file: Product.controller.js:94 ~ ProductController ~ searchProduct ~ e:",
+        e
+      );
+      res.status(400).json({ error: "Bad request!" });
+    }
+  }
 }
 
 module.exports = new Product();

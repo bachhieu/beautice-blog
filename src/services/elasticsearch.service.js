@@ -1,9 +1,13 @@
 const { Client } = require("@elastic/elasticsearch");
 require("dotenv").config();
 const DATABASE_URI = process.env.ELASTICSEARCH_URI;
+const user = process.env.ELASTICSEARCH_USERNAME;
+const password = process.env.ELASTIC_PASSWORD;
 class Elasticsearch {
   constructor() {
-    this.client = new Client({ node: DATABASE_URI });
+    this.client = new Client({
+      node: "https://elastic:qRZ8WDfx@elasticsearch-116632-0.cloudclusters.net:12321",
+    });
   }
   setIndex(index, payload) {
     if (index == "blog") {
@@ -31,11 +35,12 @@ class Elasticsearch {
   async initIndex() {
     // Tạo index nếu chưa tồn tại
     let blogIndex = await this.client.indices.exists({ index: "blog" });
-    if (blogIndex) {
+
+    if (blogIndex.body) {
       const result = await this.client.indices.delete({ index: "blog" });
-      blogIndex = false;
+      blogIndex.body = false;
     }
-    if (!blogIndex) {
+    if (!blogIndex.body) {
       const settings = {
         settings: {
           index: {
@@ -64,16 +69,15 @@ class Elasticsearch {
       };
       await this.client.indices.create({
         index: "blog",
-        // @ts-ignore
         body: settings,
       });
     }
     let productIndex = await this.client.indices.exists({ index: "product" });
-    if (productIndex) {
+    if (productIndex.body) {
       const result = await this.client.indices.delete({ index: "product" });
-      productIndex = false;
+      productIndex.body = false;
     }
-    if (!productIndex) {
+    if (!productIndex.body) {
       const settings = {
         settings: {
           index: {
@@ -116,7 +120,7 @@ class Elasticsearch {
         const model = models[name];
         // @ts-ignore
         const datas = await model.find().lean();
-        if (index && datas.length) {
+        if (index.body && datas.length) {
           const body = [];
           datas.forEach((data) => {
             body.push({
@@ -139,27 +143,36 @@ class Elasticsearch {
     return this.client.index({
       index: index,
       id: payload._id,
-      document: this.setIndex(index, payload),
+      body: this.setIndex(index, payload),
     });
   }
 
   async searchData(index, payload) {
+    let match;
+    if (index == "blog") {
+      match = {
+        content: {
+          query: payload.content || "",
+        },
+      };
+    } else {
+      match = {
+        name: {
+          query: payload.name || "",
+        },
+      };
+    }
     let query = {
       size: 10,
       query: {
-        match_bool_prefix: {
-          name: {
-            query: payload.name || "",
-          },
-        },
+        match_bool_prefix: match,
       },
     };
     const result = await this.client.search({
       index: index,
       body: query,
     });
-
-    return result.hits?.hits?.map((hit) => hit._source);
+    return result.body.hits?.hits?.map((hit) => hit._source);
   }
 
   async sort(index, order) {
@@ -174,7 +187,7 @@ class Elasticsearch {
       index: index,
       body: query,
     });
-    return result.hits?.hits?.map((hit) => hit?._source);
+    return result?.body?.hits?.map((hit) => hit?._source);
   }
 }
 
